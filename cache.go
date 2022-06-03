@@ -1,23 +1,49 @@
 package cache
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Cache struct {
+	value    string
+	deadline time.Time
 }
+
+var wg sync.WaitGroup
 
 func NewCache() Cache {
 	return Cache{}
 }
 
-func (receiver) Get(key string) (string, bool) {
+var caches = map[string]Cache{}
 
+func (c Cache) Get(key string) (string, bool) {
+	if k, ok := caches[key]; ok {
+		if time.Now().After(k.deadline) {
+			delete(caches, key)
+		}else{
+			return caches[key].value, true
+		}
+	}
+	return "", false
 }
 
-func (receiver) Put(key, value string) {
+func (c Cache) Put(key, value string) {
+	caches[key] = Cache{value: value}
 }
 
-func (receiver) Keys() []string {
+func (c Cache) Keys() (a []string) {
+	for k, v := range caches {
+		if time.Now().After(v.deadline) {
+			delete(caches, k)
+		} else {
+			a = append(a, v.value)
+		}
+	}
+	return
 }
 
-func (receiver) PutTill(key, value string, deadline time.Time) {
+func (c Cache) PutTill(key, value string, deadline time.Time) {
+	caches[key] = Cache{value, deadline}
 }
