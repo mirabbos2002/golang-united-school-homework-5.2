@@ -12,13 +12,13 @@ type Cache struct {
 
 var wg sync.WaitGroup
 
-func NewCache() Cache {
-	return Cache{}
+func NewCache() *Cache {
+	return &Cache{}
 }
 
 var caches = map[string]Cache{}
 
-func (c Cache) Get(key string) (string, bool) {
+func (c *Cache) Get(key string) (string, bool) {
 	if k, ok := caches[key]; ok {
 		if time.Now().After(k.deadline) {
 			delete(caches, key)
@@ -29,11 +29,11 @@ func (c Cache) Get(key string) (string, bool) {
 	return "", false
 }
 
-func (c Cache) Put(key, value string) {
+func (c *Cache) Put(key, value string) {
 	caches[key] = Cache{value: value}
 }
 
-func (c Cache) Keys() (a []string) {
+func (c *Cache) Keys() (a []string) {
 	for k, v := range caches {
 		if time.Now().After(v.deadline) {
 			delete(caches, k)
@@ -44,6 +44,6 @@ func (c Cache) Keys() (a []string) {
 	return
 }
 
-func (c Cache) PutTill(key, value string, deadline time.Time) {
+func (c *Cache) PutTill(key, value string, deadline time.Time) {
 	caches[key] = Cache{value, deadline}
 }
