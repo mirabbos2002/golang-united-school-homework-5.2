@@ -20,9 +20,13 @@ var caches = map[string]Cache{}
 
 func (c *Cache) Get(key string) (string, bool) {
 	if k, ok := caches[key]; ok {
-		if time.Now().After(k.deadline) {
+		emp := Cache{}
+		if k.deadline == emp.deadline {
+			return caches[key].value, true
+		}else if time.Now().After(k.deadline) {
 			delete(caches, key)
-		}else{
+			return "", false
+		} else {
 			return caches[key].value, true
 		}
 	}
