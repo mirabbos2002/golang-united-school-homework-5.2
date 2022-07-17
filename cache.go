@@ -19,14 +19,16 @@ func NewCache() *Cache {
 }
 
 func (c Cache) Get(key string) (string, bool) {
-	v := c.c[key]
-	if time.Now().After(v.time) && (v.time!=time.Time{}){
-		delete(c.c, key)
-		return "", false
-	} else {
-		defer delete(c.c, key)
-		return v.value, true
+	v, ok := c.c[key]
+	if ok {
+		if time.Now().After(v.time) && (v.time != time.Time{}) {
+			delete(c.c, key)
+			return "", false
+		} else {
+			return v.value, true
+		}
 	}
+	return "", false
 }
 
 func (c *Cache) Put(key, value string) {
@@ -35,10 +37,10 @@ func (c *Cache) Put(key, value string) {
 
 func (c *Cache) Keys() (a []string) {
 	for k, v := range c.c {
-		if time.Now().After(v.time) && (v.time!=time.Time{}) {
+		if time.Now().After(v.time) && (v.time != time.Time{}) {
 			delete(c.c, k)
 		} else {
-			a = append(a, v.value)
+			a = append(a, k)
 		}
 	}
 	return
